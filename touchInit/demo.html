@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta charset="utf-8">
+  <title>DragNav demo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" media="(device-height: 568px)">
+
+  <style type="text/css">
+    * {
+      padding: 0;
+      margin: 0;
+      border: 0;
+    }
+
+    body {
+      background: #eee;
+      padding: 15px;
+      font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+    #demo{
+      width: 100%;
+      overflow: hidden;
+    }
+
+    #content {
+      width: 2000px;
+      height: 200px;
+      background: #457;
+      cursor: hand;
+      cursor: -moz-grab;
+      cursor: -webkit-grab;
+      cursor: grab;
+      clear: both;
+    }
+
+    .branch{
+      width: 200px;
+      height: 200px;
+      float: left;
+    }
+
+    .branch:nth-child(3n){
+      background-color: #6d6d6d;
+    }
+
+    .branch:nth-child(3n+1){
+      background-color: #3d3d3d;
+    }
+
+    .branch:nth-child(3n+2){
+      background-color: #bababa;
+    }
+
+  </style>
+
+</head>
+<body>
+
+  <div id="demo">
+    <div id="content">
+      <div class="branch"></div>
+      <div class="branch"></div>
+      <div class="branch"></div>
+      <div class="branch"></div>
+      <div class="branch"></div>
+      <div class="branch"></div>
+      <div class="branch"></div>
+      <div class="branch"></div>
+      <div class="branch"></div>
+      <div class="branch"></div>
+    </div>
+  </div>
+
+
+  <script type="text/javascript" src="touchInit.js"></script>
+
+  <script>
+
+  // container的width必须等于所有内容元素width的和，即container.clientWidth == container.offsetWidth
+    document.addEventListener("DOMContentLoaded", function() {
+      var container = document.querySelector('#content');
+      var pageTouch = new TouchInit(container);  
+    }, false)
+
+  </script>
+
+</body>
+</html>
