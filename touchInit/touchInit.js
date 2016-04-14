@@ -1,3 +1,21 @@
+/**
+ *
+ * config = {
+ *  onTouchMove: function(){}, //the function will be call after touchMove occur
+    onTouchEnd: function(){}, //the function will be call after touchEnd occur
+    border:{
+      width:window.screen.width, //touch区域的宽度限制
+      height:window.screen.height //touch区域的高度限制
+    }, //宽/高滚动区域外层将会被限制为这个值
+    wrap:doc.body, //touch区域的外层，会被绑定touch事件
+    direction: "horizontal" //要实现的滚动方向
+ * }
+ * var container = document.querySelector('#content');
+ * var pageTouch = new TouchInit(container,config);  
+ *
+ */
+
+
 ;(function( window,$ ) {
   "use strict";
 
@@ -72,7 +90,11 @@
   var  defaultConfig = {
     onTouchMove: function(){},
     onTouchEnd: function(){},
-    wrap:doc.body,
+    border:{
+      width:window.screen.width,
+      height:window.screen.height
+    }, //宽/高滚动区域外层将会被限制为这个值
+    wrap:doc.body, //
     direction: "horizontal"
   },
 
@@ -83,11 +105,11 @@
   endEvent = isTouch ? 'touchend' : 'mouseup',
 
   supports = (function() {
-   var div = doc.createElement('div'),
+    var div = doc.createElement('div'),
        vendors = 'Khtml Ms O Moz Webkit'.split(' '),
        len = vendors.length;
 
-   return function( prop ) {
+    return function( prop ) {
       if ( prop in div.style ) return true;
 
       prop = prop.replace(/^[a-z]/, function(val) {
@@ -100,16 +122,17 @@
          }
       }
       return false;
-   };
-})(),
+    };
+  })(),
 
-supportTransform = supports('transform');
+  supportTransform = supports('transform');
 
   var TouchInit = function(container,config){
     var defaultCongigCopy = extend( {}, defaultConfig );
 
     this.config = extend(defaultCongigCopy, config);
     this.container = container;
+    this.wrap = this.config.wrap;
     this.onTouchMove = proxy(this.config.onTouchMove, this);
     this.onTouchEnd = proxy(this.config.onTouchEnd, this);
 
@@ -119,8 +142,8 @@ supportTransform = supports('transform');
     this._onMove = proxy( this._onMove, this );
     this._onEnd = proxy( this._onEnd, this );
     this.scrollBorder  = { x: 0, y: 0 };//record the border
-    this.wrapWidth = this.config.wrap.clientWidth;
-    this.wrapHeight = this.config.wrap.clientHeight;
+    this.wrapWidth = this.config.border.width;
+    this.wrapHeight = this.config.border.height;
 
     this.init();
   }
@@ -175,10 +198,17 @@ supportTransform = supports('transform');
   extend(TouchInit.prototype, {
 
         init: function(){
+
           addEventListener(this.container, startEvent, this._onStart);
           this.coordinates = {
             x:0,
             y:0
+          }
+
+          if(this.config.direction == 'horizontal'){
+            this.wrap.style.width = this.config.border.width+'px';
+          }else{
+            this.wrap.style.height = this.config.border.height+'px';
           }
         },
 
@@ -281,9 +311,9 @@ supportTransform = supports('transform');
               }
               break;
 
-            case "up":
+            case "up":// todo: 快速滑动会导致this.scrollBorder.y是上次的值，但是this.coordinates.y特别大，滚动太多
               if ( this.container.offsetHeight- this.wrapHeight <= Math.abs(this.scrollBorder.y) ) {
-                coordinates.y = Math.round( -(this.container.offsetHeight - this.wrapHeight) + y / 2 );
+                coordinates.y = Math.round( -(this.container.offsetHeight - this.wrapHeight) + y / 5 );
                 return coordinates;
               }
             break;
@@ -317,7 +347,7 @@ supportTransform = supports('transform');
         },
 
         _scrollWithTransform: function ( coordinates ) {
-          var style = "translateX(" + coordinates.x + "px)" ;
+          var style = this.config.direction == "horizontal"? "translateX(" + coordinates.x + "px)": "translateY(" + coordinates.y + "px)";
 
           setStyles( this.container, {
             "-webkit-transform": style,
