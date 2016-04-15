@@ -15,8 +15,8 @@
  *
  */
 
-
 ;(function( window,$ ) {
+
   "use strict";
 
   // help the minifier
@@ -90,6 +90,8 @@
   var  defaultConfig = {
     onTouchMove: function(){},
     onTouchEnd: function(){},
+    onClick: function(){}, // click事件发生时的滚动操作
+    duration: 300, // click时滚动的速度
     border:{
       width:window.screen.width,
       height:window.screen.height
@@ -135,15 +137,19 @@
     this.wrap = this.config.wrap;
     this.onTouchMove = proxy(this.config.onTouchMove, this);
     this.onTouchEnd = proxy(this.config.onTouchEnd, this);
+    this.onClick = proxy(this.config.onClick, this);
 
     this._scroll = supportTransform ? this._scrollWithTransform : this._scrollWithoutTransform;
 
     this._onStart = proxy( this._onStart, this );
     this._onMove = proxy( this._onMove, this );
     this._onEnd = proxy( this._onEnd, this );
+    this._afterScrollTransform = proxy( this._afterScrollTransform, this );
     this.scrollBorder  = { x: 0, y: 0 };//record the border
     this.wrapWidth = this.config.border.width;
     this.wrapHeight = this.config.border.height;
+
+    this.ismove = false; //记录是否move，为click事件做铺垫
 
     this.init();
   }
@@ -165,32 +171,32 @@
   }
 
 
+  // todo: have bug
   function setStyles( element, styles ) {
 
     var property,
         value;
 
-    for ( property in styles ) {
+    if($){
+      $(element).css(styles);
+    }else{
+      for ( property in styles ) {
+        if ( styles.hasOwnProperty(property) ) {
+          value = styles[property];
 
-      if ( styles.hasOwnProperty(property) ) {
-        value = styles[property];
-
-        switch ( property ) {
-          case "height":
-          case "width":
-          case "marginLeft":
-          case "marginTop":
-            value += "px";
+          switch ( property ) {
+            case "height":
+            case "width":
+            case "marginLeft":
+            case "marginTop":
+              value += "px";
+          }
+          window.requestAnimationFrame(function(){
+            element.style[property] = value;
+          })  
         }
-
-        window.requestAnimationFrame(function(){
-          element.style[property] = value;
-        })  
-
       }
-
     }
-
     return element;
 
   }
@@ -237,24 +243,35 @@
           event.preventDefault();
 
           distance = this._getDistance(event);
+
+          // 滚动或者点击的断定
+          if(this.config.direction == 'horizontal'){
+            this.ismove = Math.abs(distance.x) > 10?true:false;
+          }else{
+            this.ismove = Math.abs(distance.y) > 10?true:false;
+          } 
           this.coordinates = this._getCoordinate(distance.direction, distance.x, distance.y);
           this._scroll( this.coordinates );
            
-          this.onTouchMove(); 
+          this.onTouchMove();
+          
         },
 
         _onEnd: function( event ) {
 
           event = event.originalEvent || event;
 
+          if(this.ismove){
+            this._resetScrollBorder();
+            this._scroll( this.scrollBorder );
+            // do what you want to do
+            this.onTouchEnd();
+          }else{
+            this.onClick(event.target);
+          }
+
           this.startCoords = { x: 0, y: 0 };
-
-          this._resetScrollBorder();
-
-          this._scroll( this.scrollBorder );
-          
-          // do what you want to do
-          this.onTouchEnd();
+          this.ismove = false;
 
           removeEventListener(doc.body, moveEvent, this._onMove);
           removeEventListener(doc.body, endEvent, this._onEnd);
@@ -363,9 +380,54 @@
           var styles =  { "marginLeft": coordinates.x } ;
 
           setStyles(this.container, styles);
+        },
+
+        // ### Animated scroll with translate support
+        _animateScrollWithTransform: function() {
+
+          var style = "transform " + this.config.duration + "ms ease-out",
+              container = this.container,
+              afterScrollTransform = this._afterScrollTransform;
+
+          setStyles( container, {
+            "-webkit-transition": "-webkit-" + style,
+            "-moz-transition": "-moz-" + style,
+            "-ms-transition": "-ms-" + style,
+            "-o-transition": "-o-" + style,
+            "transition": style
+          });
+          // after add Animated,then scroll ele
+          
+          this._scroll( this.scrollBorder);
+
+          addEventListener(container, "webkitTransitionEnd", afterScrollTransform);
+          addEventListener(container, "oTransitionEnd", afterScrollTransform);
+          addEventListener(container, "transitionend", afterScrollTransform);
+          addEventListener(container, "transitionEnd", afterScrollTransform);
+
+        },
+
+        _afterScrollTransform: function() {
+
+          var container = this.container,
+              afterScrollTransform = this._afterScrollTransform;
+
+          removeEventListener(container, "webkitTransitionEnd", afterScrollTransform);
+          removeEventListener(container, "oTransitionEnd", afterScrollTransform);
+          removeEventListener(container, "transitionend", afterScrollTransform);
+          removeEventListener(container, "transitionEnd", afterScrollTransform);
+
+          setStyles( container, {
+            "-webkit-transition": "",
+            "-moz-transition": "",
+            "-ms-transition": "",
+            "-o-transition": "",
+            "transition": ""
+          });
+
         }
+
   })
 
-  window.TouchInit = TouchInit;
-
 })(window,window.jQuery || window.Zepto)
+
