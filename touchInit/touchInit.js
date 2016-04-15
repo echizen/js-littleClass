@@ -3,6 +3,7 @@
  * config = {
  *  onTouchMove: function(){}, //the function will be call after touchMove occur
     onTouchEnd: function(){}, //the function will be call after touchEnd occur
+    onClick: function(){},  // click event
     border:{
       width:window.screen.width, //touch区域的宽度限制
       height:window.screen.height //touch区域的高度限制
