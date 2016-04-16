@@ -308,7 +308,7 @@
           switch ( direction ) {
 
             case "right":
-              if ( this.scrollBorder.x>=0 ) {
+              if ( this.scrollBorder.x + x>=0 ) {
                 coordinates.x = Math.round((x - this.scrollBorder.x) / 5 );
                 return coordinates;
               }
@@ -316,21 +316,21 @@
 
             case "left":
               // scroll after right border,divide by 5 is to slow speed
-              if ( this.container.offsetWidth - this.wrapWidth <= Math.abs(this.scrollBorder.x) ) {
-                coordinates.x = Math.round( -(this.container.offsetWidth - this.wrapWidth) + x / 2 );
+              if ( this.container.offsetWidth - this.wrapWidth <= Math.abs(this.scrollBorder.x + x) ) {
+                coordinates.x = Math.round( -(this.container.offsetWidth - this.wrapWidth) + x / 5 );
                 return coordinates;
               }
               break;
 
             case "down":
-              if ( this.scrollBorder.y >= 0 ) {
+              if ( this.scrollBorder.y + y >= 0 ) {
                 coordinates.y = Math.round( (y - this.scrollBorder.y) / 5 );
                 return coordinates;
               }
               break;
 
             case "up":// todo: 快速滑动会导致this.scrollBorder.y是上次的值，但是this.coordinates.y特别大，滚动太多
-              if ( this.container.offsetHeight- this.wrapHeight <= Math.abs(this.scrollBorder.y) ) {
+              if ( this.container.offsetHeight- this.wrapHeight <= Math.abs(this.scrollBorder.y + y) ) {
                 coordinates.y = Math.round( -(this.container.offsetHeight - this.wrapHeight) + y / 5 );
                 return coordinates;
               }
@@ -430,5 +430,6 @@
 
   })
 
+  window.TouchInit = TouchInit;
 })(window,window.jQuery || window.Zepto)
 
