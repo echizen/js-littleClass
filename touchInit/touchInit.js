@@ -4,9 +4,10 @@
  *  onTouchMove: function(){}, //the function will be call after touchMove occur
     onTouchEnd: function(){}, //the function will be call after touchEnd occur
     onClick: function(){},  // click event
+     duration: 300, // click时滚动的动画延时
     border:{
-      width:window.screen.width, //touch区域的宽度限制
-      height:window.screen.height //touch区域的高度限制
+      width:window.document.documentElement.clientWidth, //touch区域的宽度限制
+      height:window.document.documentElement.clientHeight //touch区域的高度限制
     }, //宽/高滚动区域外层将会被限制为这个值
     wrap:doc.body, //touch区域的外层，会被绑定touch事件
     direction: "horizontal" //要实现的滚动方向
@@ -92,10 +93,10 @@
     onTouchMove: function(){},
     onTouchEnd: function(){},
     onClick: function(){}, // click事件发生时的滚动操作
-    duration: 300, // click时滚动的速度
+    duration: 300, // click时滚动的动画延时
     border:{
-      width:window.screen.width,
-      height:window.screen.height
+      width:window.document.documentElement.clientWidth,
+      height:window.document.documentElement.clientHeight
     }, //宽/高滚动区域外层将会被限制为这个值
     wrap:doc.body, //
     direction: "horizontal"
@@ -179,7 +180,9 @@
         value;
 
     if($){
-      $(element).css(styles);
+      window.requestAnimationFrame(function(){
+        $(element).css(styles);
+      })
     }else{
       for ( property in styles ) {
         if ( styles.hasOwnProperty(property) ) {
